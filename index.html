@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Парадокс Монти Холла: сыграй сам и сравни результат с симуляцией на 10 000 игр.">
+  <meta name="theme-color" content="#0c0f17">
+  <title>Парадокс Монти Холла</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%234a5580'/%3E%3Crect x='10' y='6' width='12' height='20' rx='2' fill='none' stroke='white' stroke-width='2'/%3E%3Ccircle cx='19' cy='16' r='1.5' fill='white'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Unbounded:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/glass.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/sections.css">
+  <link rel="stylesheet" href="css/game.css">
+  <link rel="stylesheet" href="css/simulation.css">
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="icon-car" viewBox="0 0 24 24">
+      <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
+      <circle cx="7" cy="17" r="2"/>
+      <path d="M9 17h6"/>
+      <circle cx="17" cy="17" r="2"/>
+    </symbol>
+    <symbol id="icon-goat" viewBox="0 0 24 24">
+      <path d="M8.5 8.5h7l-.7 6.8c-.2 2.2-1.2 3.7-2.8 3.7s-2.6-1.5-2.8-3.7z"/>
+      <path d="M9 8C7.4 7.3 6.2 5.8 6.6 3.2c2.1.3 3.4 1.7 3.7 3.6"/>
+      <path d="M15 8c1.6-.7 2.8-2.2 2.4-4.8-2.1.3-3.4 1.7-3.7 3.6"/>
+      <path d="M8.8 10.2 3.5 9.6c-.1 1.6 1.4 3 4.9 3"/>
+      <path d="m15.2 10.2 5.3-.6c.1 1.6-1.4 3-4.9 3"/>
+      <path d="M12 19v2.6"/>
+      <path d="M10.4 12.3h.01M13.6 12.3h.01"/>
+    </symbol>
+    <symbol id="icon-door" viewBox="0 0 24 24">
+      <path d="M6 21V4.5C6 3.7 6.7 3 7.5 3h9c.8 0 1.5.7 1.5 1.5V21"/>
+      <path d="M3 21h18"/>
+      <path d="M14.5 12h.01"/>
+    </symbol>
+    <symbol id="icon-download" viewBox="0 0 24 24">
+      <path d="M12 3v12"/>
+      <path d="m7 10 5 5 5-5"/>
+      <path d="M4 20h16"/>
+    </symbol>
+    <symbol id="icon-arrow" viewBox="0 0 24 24">
+      <path d="M12 5v14"/>
+      <path d="m6 13 6 6 6-6"/>
+    </symbol>
+  </svg>
+
+  <div class="backdrop" aria-hidden="true">
+    <span class="orb orb--blue"></span>
+    <span class="orb orb--pink"></span>
+    <span class="orb orb--teal"></span>
+    <span class="orb orb--amber"></span>
+  </div>
+
+  <header class="nav glass">
+    <a class="nav__brand" href="#top" aria-label="Монти Холл — в начало">
+      <svg class="icon" width="24" height="24"><use href="#icon-door"/></svg>
+      <span class="nav__title">Монти Холл</span>
+    </a>
+    <nav class="nav__links" aria-label="Разделы">
+      <a class="nav__link" href="#game">Игра</a>
+      <a class="nav__link" href="#why">Почему так</a>
+      <a class="nav__link" href="#simulation">Симуляция</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero container">
+      <div class="hero__lenses" aria-hidden="true">
+        <div class="lens lens--car glass">
+          <svg class="icon" width="40" height="40"><use href="#icon-car"/></svg>
+        </div>
+        <div class="lens lens--goat glass">
+          <svg class="icon" width="36" height="36"><use href="#icon-goat"/></svg>
+        </div>
+      </div>
+
+      <p class="eyebrow">Парадокс вероятностей</p>
+      <h1 class="hero__title">
+        Три двери. Один приз.
+        <span class="accent-text">Менять или нет?</span>
+      </h1>
+      <p class="hero__lead">
+        Ведущий открыл дверь с козой и предлагает передумать. Интуиция шепчет: шансы пятьдесят на пятьдесят.
+        Математика отвечает иначе. Сыграй сам, а потом сверься с 10&nbsp;000 сыгранных партий.
+      </p>
+      <div class="hero__actions">
+        <a class="btn btn--primary" href="#game">Сыграть</a>
+        <a class="btn" href="#simulation">Смотреть симуляцию</a>
+      </div>
+
+      <dl class="hero__facts glass">
+        <div class="fact">
+          <dt>игр на стратегию</dt>
+          <dd data-sim="games">—</dd>
+        </div>
+        <div class="fact fact--switch">
+          <dt>побед при смене двери</dt>
+          <dd data-sim="switch-rate">—</dd>
+        </div>
+        <div class="fact fact--stay">
+          <dt>побед без смены</dt>
+          <dd data-sim="stay-rate">—</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="section container" id="game">
+      <header class="section__head" data-reveal>
+        <p class="eyebrow">Попробуй сам</p>
+        <h2 class="section__title">Выбери дверь</h2>
+        <p class="section__lead">
+          За одной дверью автомобиль, за двумя другими козы. Выбери дверь, посмотри на ход ведущего и реши, менять ли выбор.
+        </p>
+      </header>
+
+      <div class="game" id="gameRoot">
+        <div class="arena glass" data-reveal>
+          <ol class="stepper" aria-label="Шаги раунда">
+            <li class="stepper__item" data-step="pick"><span class="stepper__num">1</span>Выбери дверь</li>
+            <li class="stepper__item" data-step="decide"><span class="stepper__num">2</span>Оставить или поменять</li>
+            <li class="stepper__item" data-step="result"><span class="stepper__num">3</span>Результат</li>
+          </ol>
+
+          <div class="doors">
+            <div class="door-slot">
+              <button class="door" type="button" data-door="0" style="--i: 0">
+                <span class="door__room">
+                  <svg class="icon door__icon" width="44" height="44"><use href="#icon-goat"/></svg>
+                  <span class="door__caption">Коза</span>
+                </span>
+                <span class="door__leaf"><span class="door__number">1</span></span>
+              </button>
+              <span class="door-slot__tag"></span>
+            </div>
+            <div class="door-slot">
+              <button class="door" type="button" data-door="1" style="--i: 1">
+                <span class="door__room">
+                  <svg class="icon door__icon" width="44" height="44"><use href="#icon-goat"/></svg>
+                  <span class="door__caption">Коза</span>
+                </span>
+                <span class="door__leaf"><span class="door__number">2</span></span>
+              </button>
+              <span class="door-slot__tag"></span>
+            </div>
+            <div class="door-slot">
+              <button class="door" type="button" data-door="2" style="--i: 2">
+                <span class="door__room">
+                  <svg class="icon door__icon" width="44" height="44"><use href="#icon-goat"/></svg>
+                  <span class="door__caption">Коза</span>
+                </span>
+                <span class="door__leaf"><span class="door__number">3</span></span>
+              </button>
+              <span class="door-slot__tag"></span>
+            </div>
+          </div>
+
+          <p class="status" id="status" aria-live="polite"></p>
+
+          <div class="controls">
+            <button class="btn btn--primary" type="button" id="switch" hidden>Поменять дверь</button>
+            <button class="btn" type="button" id="stay" hidden>Оставить выбор</button>
+            <button class="btn btn--primary" type="button" id="next" hidden>Следующий раунд</button>
+          </div>
+        </div>
+
+        <aside class="scoreboard glass" aria-label="Статистика" data-reveal>
+          <h3 class="scoreboard__title">Твоя статистика</h3>
+
+          <dl class="stat-grid">
+            <div class="stat">
+              <dt>Всего игр</dt>
+              <dd id="games">0</dd>
+            </div>
+            <div class="stat">
+              <dt>Победы</dt>
+              <dd id="wins">0</dd>
+            </div>
+            <div class="stat">
+              <dt>Доля побед</dt>
+              <dd id="rate">—</dd>
+            </div>
+          </dl>
+
+          <div class="meters">
+            <div class="meter meter--switch">
+              <div class="meter__head">
+                <span>Если менять</span>
+                <span id="switchTally">—</span>
+              </div>
+              <div class="meter__track" aria-hidden="true"><span class="meter__fill" id="switchMeter"></span></div>
+            </div>
+            <div class="meter meter--stay">
+              <div class="meter__head">
+                <span>Если оставлять</span>
+                <span id="stayTally">—</span>
+              </div>
+              <div class="meter__track" aria-hidden="true"><span class="meter__fill" id="stayMeter"></span></div>
+            </div>
+          </div>
+
+          <p class="scoreboard__hint">
+            Ведущий знает, где приз, всегда открывает невыбранную дверь с козой и всегда предлагает сменить выбор.
+          </p>
+          <button class="btn btn--ghost" type="button" id="reset">Сбросить статистику</button>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section container" id="why">
+      <header class="section__head" data-reveal>
+        <p class="eyebrow">Разбор</p>
+        <h2 class="section__title">Почему смена выигрывает</h2>
+        <p class="section__lead">
+          Допустим, ты всегда выбираешь дверь&nbsp;1. Возможны три равновероятных расклада, и ведущий всегда открывает одну из дверей с козой.
+        </p>
+      </header>
+
+      <div class="scenarios">
+        <article class="scenario glass" data-reveal>
+          <p class="scenario__chance">1 из 3</p>
+          <h3 class="scenario__title">Автомобиль за твоей дверью</h3>
+          <ul class="mini-doors">
+            <li class="mini-door mini-door--car mini-door--chosen">
+              <svg class="icon" width="28" height="28"><use href="#icon-car"/></svg>
+              <span class="mini-door__name">Дверь 1</span>
+              <span class="mini-door__note">твой выбор</span>
+            </li>
+            <li class="mini-door mini-door--goat mini-door--opened">
+              <svg class="icon" width="28" height="28"><use href="#icon-goat"/></svg>
+              <span class="mini-door__name">Дверь 2</span>
+              <span class="mini-door__note">открыл ведущий</span>
+            </li>
+            <li class="mini-door mini-door--goat">
+              <svg class="icon" width="28" height="28"><use href="#icon-goat"/></svg>
+              <span class="mini-door__name">Дверь 3</span>
+              <span class="mini-door__note">&nbsp;</span>
+            </li>
+          </ul>
+          <dl class="outcomes">
+            <div class="outcome outcome--win"><dt>Оставить</dt><dd>Выигрыш</dd></div>
+            <div class="outcome outcome--lose"><dt>Поменять</dt><dd>Проигрыш</dd></div>
+          </dl>
+        </article>
+
+        <article class="scenario glass" data-reveal>
+          <p class="scenario__chance">1 из 3</p>
+          <h3 class="scenario__title">Автомобиль за второй дверью</h3>
+          <ul class="mini-doors">
+            <li class="mini-door mini-door--goat mini-door--chosen">
+              <svg class="icon" width="28" height="28"><use href="#icon-goat"/></svg>
+              <span class="mini-door__name">Дверь 1</span>
+              <span class="mini-door__note">твой выбор</span>
+            </li>
+            <li class="mini-door mini-door--car">
+              <svg class="icon" width="28" height="28"><use href="#icon-car"/></svg>
+              <span class="mini-door__name">Дверь 2</span>
+              <span class="mini-door__note">&nbsp;</span>
+            </li>
+            <li class="mini-door mini-door--goat mini-door--opened">
+              <svg class="icon" width="28" height="28"><use href="#icon-goat"/></svg>
+              <span class="mini-door__name">Дверь 3</span>
+              <span class="mini-door__note">открыл ведущий</span>
+            </li>
+          </ul>
+          <dl class="outcomes">
+            <div class="outcome outcome--lose"><dt>Оставить</dt><dd>Проигрыш</dd></div>
+            <div class="outcome outcome--win"><dt>Поменять</dt><dd>Выигрыш</dd></div>
+          </dl>
+        </article>
+
+        <article class="scenario glass" data-reveal>
+          <p class="scenario__chance">1 из 3</p>
+          <h3 class="scenario__title">Автомобиль за третьей дверью</h3>
+          <ul class="mini-doors">
+            <li class="mini-door mini-door--goat mini-door--chosen">
+              <svg class="icon" width="28" height="28"><use href="#icon-goat"/></svg>
+              <span class="mini-door__name">Дверь 1</span>
+              <span class="mini-door__note">твой выбор</span>
+            </li>
+            <li class="mini-door mini-door--goat mini-door--opened">
+              <svg class="icon" width="28" height="28"><use href="#icon-goat"/></svg>
+              <span class="mini-door__name">Дверь 2</span>
+              <span class="mini-door__note">открыл ведущий</span>
+            </li>
+            <li class="mini-door mini-door--car">
+              <svg class="icon" width="28" height="28"><use href="#icon-car"/></svg>
+              <span class="mini-door__name">Дверь 3</span>
+              <span class="mini-door__note">&nbsp;</span>
+            </li>
+          </ul>
+          <dl class="outcomes">
+            <div class="outcome outcome--lose"><dt>Оставить</dt><dd>Проигрыш</dd></div>
+            <div class="outcome outcome--win"><dt>Поменять</dt><dd>Выигрыш</dd></div>
+          </dl>
+        </article>
+      </div>
+
+      <p class="verdict glass" data-reveal>
+        Оставляя выбор, ты выигрываешь в <strong>1 случае из 3</strong>. Меняя дверь, в <strong>2 случаях из 3</strong>:
+        ведущий не открывает автомобиль, поэтому весь шанс закрытых дверей достаётся оставшейся.
+      </p>
+    </section>
+
+    <section class="section container" id="simulation">
+      <header class="section__head" data-reveal>
+        <p class="eyebrow">Эксперимент</p>
+        <h2 class="section__title">10&nbsp;000 игр подряд</h2>
+        <p class="section__lead">
+          Компьютер сыграл по 10&nbsp;000 партий каждой стратегией по тем же правилам, что и в игре выше.
+          Чем больше партий, тем ближе доли побед к теоретическим 1/3 и 2/3.
+        </p>
+      </header>
+
+      <div class="sim glass" data-reveal>
+        <div class="results">
+          <article class="result result--switch">
+            <p class="result__label">Поменять дверь</p>
+            <p class="result__value" data-sim="switch-rate">—</p>
+            <div class="meter__track" aria-hidden="true"><span class="meter__fill meter__fill--switch" data-meter="switch"></span></div>
+            <p class="result__note"><span data-sim="switch-wins">—</span> побед из <span data-sim="games">—</span></p>
+          </article>
+          <article class="result result--stay">
+            <p class="result__label">Оставить выбор</p>
+            <p class="result__value" data-sim="stay-rate">—</p>
+            <div class="meter__track" aria-hidden="true"><span class="meter__fill meter__fill--stay" data-meter="stay"></span></div>
+            <p class="result__note"><span data-sim="stay-wins">—</span> побед из <span data-sim="games">—</span></p>
+          </article>
+        </div>
+
+        <figure class="chart">
+          <div class="chart__legend">
+            <span class="legend legend--switch">Поменять дверь</span>
+            <span class="legend legend--stay">Оставить выбор</span>
+            <span class="legend legend--theory">Теория</span>
+          </div>
+          <svg class="chart__canvas" id="chart" role="img" aria-label="График: доля побед при смене двери стремится к 66,7%, без смены — к 33,3%"></svg>
+          <figcaption class="chart__caption">Доля побед по мере роста числа сыгранных партий</figcaption>
+        </figure>
+
+        <div class="sim__foot">
+          <p class="sim__verdict">
+            Смена двери выигрывает в <strong data-sim="ratio">—</strong> раза чаще, чем отказ от неё.
+          </p>
+          <a class="btn" href="results.txt" download>
+            <svg class="icon" width="20" height="20"><use href="#icon-download"/></svg>
+            Скачать results.txt
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer container">
+    <p>Веб-сайт для научно-исследовательской работы Саюковой Эвелины.</p>
+    <p>Создано: <a class="footer__link" href="https://github.com/joshibelike" target="_blank" rel="noopener noreferrer">joshibelike</a></p>
+  </footer>
+
+  <script src="js/monty-hall.js"></script>
+  <script src="js/format.js"></script>
+  <script src="js/simulation-data.js"></script>
+  <script src="js/effects.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/simulation-view.js"></script>
+</body>
+</html>
