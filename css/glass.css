@@ -106,7 +106,9 @@
   }
 
   .nav__link {
-    padding-inline: 0.65rem;
+    padding-inline: 0.55rem;
+    font-size: 0.8125rem;
+    white-space: nowrap;
   }
 }
 

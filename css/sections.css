@@ -120,6 +120,32 @@
   color: var(--amber);
 }
 
+@media (max-width: 560px) {
+  .hero__facts {
+    grid-template-columns: 1fr;
+    padding: 0.35rem 1.1rem;
+  }
+
+  .fact {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.8rem 0;
+    text-align: left;
+  }
+
+  .fact + .fact {
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
+    border-left: 0;
+  }
+
+  .fact dd {
+    order: 1;
+    font-size: 1.25rem;
+  }
+}
+
 .scenarios {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
